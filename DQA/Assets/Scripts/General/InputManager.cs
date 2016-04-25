@@ -58,7 +58,6 @@ public class InputManager : MonoBehaviour {
             if (timeMovement < 0)
                 timeMovement = 0;
         }
-
         if(timeMovement == 0) {
             if(state.ThumbSticks.Left.X < -analogSensitivty) {
                 NotificationManager.PostNotification(Notifications.INPUT_LEFT, null);

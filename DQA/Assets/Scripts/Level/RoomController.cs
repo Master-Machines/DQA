@@ -42,7 +42,8 @@ public class RoomController : MonoBehaviour {
     }
 
     public void Reveal() {
-        hiddenFogParticles.GetComponent<ParticleSystem>().enableEmission = false;
+        gameObject.SetActive(true);
+        hiddenFogParticles.SetActive(false);
     }
 }
 

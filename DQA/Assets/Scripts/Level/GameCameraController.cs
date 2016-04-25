@@ -8,6 +8,12 @@ public class GameCameraController : MonoBehaviour {
     // Straight top down
     private const float MaxXAngle = 90f;
     private const float MinXAngle = 45f;
+    private const float RoomHighlightXAngle = 60f;
+    private Vector3 PlayerHighlightOffset = new Vector3(0, 25f, -15f);
+    private Vector3 RoomHighlightOffset = new Vector3(0, 35f, -15f);
+
+    private const float RealtimeMovementSpeed = 25f;
+    private const float RealtimeRotationSpeed = 50f;
 
     private float posMovementTime = 0f;
     private float posMovementMax = 0f;
@@ -19,6 +25,8 @@ public class GameCameraController : MonoBehaviour {
     private float rotXStart;
     private float rotXEnd;
 
+    private bool updatingForActionPhase;
+
     void Awake() {
         Instance = this;
         NotificationManager.Observe(this, "PhaseChanged", Notifications.NOTIFICATION_PHASE_INCREMENTED);
@@ -26,13 +34,21 @@ public class GameCameraController : MonoBehaviour {
 
     void PhaseChanged(Dictionary<string, object> paramaters) {
         Phase p = PhaseTracker.GetPhaseFromNotificationParams(paramaters);
+        updatingForActionPhase = false;
         if(p == Phase.Intermediate) {
             MoveToTargetPositionOverTime(GridMaster.Instance.CurrentMap.GridCenter, PhaseTracker.PhaseTransitionTime);
             MoveToTargetRotationOverTime(MaxXAngle, PhaseTracker.PhaseTransitionTime);
         } else if(p == Phase.Status) {
             MoveToTargetPositionOverTime(GetPlayerCameraPosition(), PhaseTracker.PhaseTransitionTime);
             MoveToTargetRotationOverTime(MinXAngle, PhaseTracker.PhaseTransitionTime);
+        } else if(p == Phase.Action) {
+            StartCoroutine(QueueAction());
         }
+    }
+
+    IEnumerator QueueAction() {
+        yield return new WaitForSeconds(PhaseTracker.PhaseTransitionTime);
+        updatingForActionPhase = true;
     }
 
     void MoveToTargetPositionOverTime(Vector3 pos, float time) {
@@ -56,9 +72,72 @@ public class GameCameraController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        UpdatePosition();
-        UpdateRotation();
+        if(updatingForActionPhase) {
+            RealtimeUpdate();
+        } else {
+            UpdatePosition();
+            UpdateRotation();
+        }
 	}
+
+    
+    void RealtimeUpdate() {
+        ActionPhaseController.ActionSubPhase subPhase = ActionPhaseController.Instance.CurrentSubPhase;
+        if(subPhase == ActionPhaseController.ActionSubPhase.Overall) {
+            posEndPosition = GetPlayerCameraPosition();
+            rotXEnd = MinXAngle;
+        } else if(subPhase == ActionPhaseController.ActionSubPhase.Move) {
+            posEndPosition = ActionPhaseController.Instance.MovementRooms[ActionPhaseController.Instance.CurrentlyHighlightedRoom].transform.position;
+            posEndPosition += RoomHighlightOffset;
+            rotXEnd = RoomHighlightXAngle;
+        }
+
+        Vector3 pos = transform.position;
+        if(pos.x < posEndPosition.x) {
+            pos.x += RealtimeMovementSpeed * Time.deltaTime;
+            if (pos.x > posEndPosition.x)
+                pos.x = posEndPosition.x;
+        } else if (pos.x > posEndPosition.x) {
+            pos.x -= RealtimeMovementSpeed * Time.deltaTime;
+            if (pos.x < posEndPosition.x)
+                pos.x = posEndPosition.x;
+        }
+
+        if(pos.y < posEndPosition.y) {
+            pos.y += RealtimeMovementSpeed * Time.deltaTime;
+            if (pos.y > posEndPosition.y)
+                pos.y = posEndPosition.y;
+        } else if (pos.y > posEndPosition.y) {
+            pos.y -= RealtimeMovementSpeed * Time.deltaTime;
+            if (pos.y < posEndPosition.y)
+                pos.y = posEndPosition.y;
+        }
+
+        if(pos.z < posEndPosition.z) {
+            pos.z += RealtimeMovementSpeed * Time.deltaTime;
+            if (pos.z > posEndPosition.z)
+                pos.z = posEndPosition.z;
+        } else if (pos.z > posEndPosition.z) {
+            pos.z -= RealtimeMovementSpeed * Time.deltaTime;
+            if (pos.z < posEndPosition.z)
+                pos.z = posEndPosition.z;
+        }
+
+        transform.position = pos;
+
+        Vector3 rot = transform.eulerAngles;
+        if(rot.x < rotXEnd) {
+            rot.x += RealtimeRotationSpeed * Time.deltaTime;
+            if (rot.x > rotXEnd)
+                rot.x = rotXEnd;
+        } else if(rot.x > rotXEnd) {
+            rot.x -= RealtimeRotationSpeed * Time.deltaTime;
+            if (rot.x < rotXEnd)
+                rot.x = rotXEnd;
+        }
+
+        transform.eulerAngles = rot;
+    }
 
     void UpdatePosition() {
         if(posMovementMax > 0f) {
@@ -89,7 +168,7 @@ public class GameCameraController : MonoBehaviour {
 
     Vector3 GetPlayerCameraPosition() {
         Vector3 playerPosition = Game.CurrentGame.CurrentPlayer.PlayerController.transform.position;
-        playerPosition += new Vector3(0f, 25f, -15f);
+        playerPosition += PlayerHighlightOffset;
         return playerPosition;
     }
 }

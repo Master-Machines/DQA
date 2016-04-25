@@ -10,5 +10,6 @@ public class Player {
     public void LinkPlayerToController(PlayerController p) {
         PlayerController = p;
         p.player = this;
+        Initiated = true;
     }
 }

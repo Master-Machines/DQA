@@ -41,4 +41,13 @@ public class Coordinate : object{
     {
         return X == p.X && Z == p.Z;
     }
+
+    /// <summary>
+    /// Returns the delta between another coord. EG. this=(1,0) other=(2,1). this.Delta(other) return (-1, -1)
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public Coordinate Delta(Coordinate other) {
+        return new Coordinate(other.X - this.X, other.Z - this.Z);
+    }
 }

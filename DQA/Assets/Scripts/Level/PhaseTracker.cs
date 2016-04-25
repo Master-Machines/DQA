@@ -11,7 +11,7 @@ public class PhaseTracker : MonoBehaviour {
 
     void Awake() {
         Instance = this;
-        CurrentGame = new Game(4);
+        CurrentGame = new Game(1);
         CurrentPhase = Phase.Action;
         NotificationManager.Observe(this, "LevelLoaded", Notifications.NOTIFICATION_LEVEL_LOADED);        
     }

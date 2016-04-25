@@ -116,6 +116,10 @@ public class GridMaster : MonoBehaviour {
         p.CurrentRoom = spawnPoints[p.PlayerNumber];
     }
 
+    /// <summary>
+    /// Returns a list of adjacent rooms. NOTE: Does not nessesarily return rooms that the player can enter (eg. if a wall is blocking it) 
+    /// </summary>
+    /// <returns>A list of adjacent rooms</returns>
     public List<RoomController> GetAdjacentRooms(RoomController room) {
         List<RoomController> rooms = new List<RoomController>();
         foreach (RoomController r in grid) {
@@ -124,6 +128,51 @@ public class GridMaster : MonoBehaviour {
             }
         }
         return rooms;
+    }
+
+    /// <summary>
+    /// Returns a list of rooms in a specefic order. If the room cannot be entered, then that spot in the list will be null.
+    /// Order: 0 = left (-X), 1 = top (Z), 2 = right (X), 3 (-Z)
+    /// </summary>
+    public RoomController[] GetEnterableRooms(RoomController room) {
+        RoomController[] sortedRooms = GetSortedAdjacentRooms(room);
+        
+        // Determine if the player can enter the room.
+        if (room.NegXConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[0] == null || sortedRooms[0].PosXConnection == RoomConnection.RoomConnectionType.Wall)
+            sortedRooms[0] = null;
+        if (room.PosZConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[1] == null || sortedRooms[1].NegZConnection == RoomConnection.RoomConnectionType.Wall)
+            sortedRooms[1] = null;
+        if (room.PosXConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[2] == null || sortedRooms[2].NegXConnection == RoomConnection.RoomConnectionType.Wall)
+            sortedRooms[2] = null;
+        if (room.NegZConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[3] == null || sortedRooms[3].PosZConnection == RoomConnection.RoomConnectionType.Wall)
+            sortedRooms[3] = null;
+
+        return sortedRooms;
+    }
+
+    /// <summary>
+    /// Given a room, returns the list in the order given below. If there was no room, then that spot in the list will be null.
+    /// Order: 0 = left (-X), 1 = top (Z), 2 = right (X), 3 (-Z)
+    /// </summary>
+    /// <returns></returns>
+    public RoomController[] GetSortedAdjacentRooms(RoomController room) {
+        List<RoomController> adjacentRooms = GetAdjacentRooms(room);
+        RoomController[] sortedRooms = new RoomController[4];
+
+        // Sort the rooms.
+        foreach(RoomController adjacentRoom in adjacentRooms) {
+            Coordinate delta = room.GridPosition.Delta(adjacentRoom.GridPosition);
+            if (delta.X == -1)
+                sortedRooms[0] = adjacentRoom;
+            else if (delta.Z == 1)
+                sortedRooms[1] = adjacentRoom;
+            else if (delta.X == 1)
+                sortedRooms[2] = adjacentRoom;
+            else if (delta.Z == -1)
+                sortedRooms[3] = adjacentRoom;
+        }
+
+        return sortedRooms;
     }
 
 }

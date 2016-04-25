@@ -21,7 +21,6 @@ public class IntermediatePhaseController : MonoBehaviour {
 
     void PhaseChanged(Dictionary<string, object> parameters) {
         Phase p = PhaseTracker.GetPhaseFromNotificationParams(parameters);
-        Debug.Log("Phase changed intermediate");
         if(p == Phase.Intermediate && !phaseEnabled) {
             StartCoroutine(QueuePhase());
         }
