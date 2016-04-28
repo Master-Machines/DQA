@@ -7,6 +7,7 @@ public class RoomCreationInfo {
     public Coordinate Coords;
     public string SceneName;
     public GameObject HiddenRoomParticlesPrefab;
+    public GameObject HallwayParticlesPrefab;
 
     public RoomCreationInfo(Coordinate spawnLocation, string sceneName)
     {
@@ -14,9 +15,10 @@ public class RoomCreationInfo {
         SceneName = sceneName;
     }
 
-    public RoomCreationInfo(Coordinate spawnLocation, string sceneName, GameObject hiddenRoomParticles) {
+    public RoomCreationInfo(Coordinate spawnLocation, string sceneName, GameObject hiddenRoomParticles, GameObject hallwayParticlesPrefab) {
         Coords = spawnLocation;
         SceneName = sceneName;
+        HallwayParticlesPrefab = hallwayParticlesPrefab;
         HiddenRoomParticlesPrefab = hiddenRoomParticles;
     }
 }

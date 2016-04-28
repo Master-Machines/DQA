@@ -19,6 +19,6 @@ public class GameplayConstants
 
     public string treasureRoomName = "treasureRoom";
     public string spawnRoomName = "spawnRoom";
-    public int totalNumberOfStandardRooms = 1;
+    public int totalNumberOfStandardRooms = 3;
     public string standardRoomNamePrefix = "room";
 }

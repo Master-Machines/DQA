@@ -6,12 +6,14 @@ public class PlayerController : MonoBehaviour {
     public const float TimeToChangeRooms = 2f;
     public Player player;
     public Animation Anim;
+    public GameObject CryptParticlesPrefab;
+    public GameObject Model;
 
     private float movementTime;
     private float movementTimeMax;
     private Vector3 movementStartingPosition;
     private Vector3 movementEndingPosition;
-    
+    private GameObject createdCryptParticles;
 
 	void Start () {
         Anim.Play("free");
@@ -38,8 +40,23 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void MoveToRoom(RoomController room) {
+        if(!player.InCrypt) {
+            room.Reveal(player.CurrentRoom);
+        }
         player.CurrentRoom = room;
         MoveToPoint(new Vector3(room.transform.position.x, transform.position.y, room.transform.position.z), TimeToChangeRooms);
+    }
+
+    public void SwitchCryptMode(bool inCrypt) {
+        player.InCrypt = inCrypt;
+        Model.SetActive(!inCrypt);
+        if(inCrypt) {
+            createdCryptParticles = (GameObject)Instantiate(CryptParticlesPrefab, transform.position, Quaternion.identity);
+            createdCryptParticles.transform.Translate(Vector3.up * 3f);
+            createdCryptParticles.transform.SetParent(transform);
+        } else {
+            Destroy(createdCryptParticles);
+        }
     }
 
     private void MoveToPoint(Vector3 target, float time) {

@@ -6,6 +6,7 @@ public class Player {
     public PlayerController PlayerController;
     public bool Initiated;
     public RoomController CurrentRoom;
+    public bool InCrypt;
 
     public void LinkPlayerToController(PlayerController p) {
         PlayerController = p;

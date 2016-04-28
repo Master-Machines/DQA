@@ -9,6 +9,7 @@ public class GridMaster : MonoBehaviour {
     public static GridMaster Instance;
 
     public GameObject HiddenRoomParticlesPrefab;
+    public GameObject HallwayParticlesPrefab;
     public GameObject BorderPrefab;
     public GameObject PlayerPrefab;
 
@@ -50,10 +51,13 @@ public class GridMaster : MonoBehaviour {
     }
 
     private void createBorder() {
+        GameObject borderParent = new GameObject("BorderParent");
         border = new List<GameObject>();
         List<Coordinate> borderCoords = CurrentMap.GetBorderCoords();
         foreach (Coordinate c in borderCoords) {
-            border.Add((GameObject)Instantiate(BorderPrefab, c.GetWorldPosition(), Quaternion.identity));
+            GameObject createdBorderPiece = (GameObject)Instantiate(BorderPrefab, c.GetWorldPosition(), Quaternion.identity);
+            createdBorderPiece.transform.SetParent(borderParent.transform);
+            border.Add(createdBorderPiece);
         }
     }
 
@@ -96,7 +100,7 @@ public class GridMaster : MonoBehaviour {
     private void loadStandardRoom(Coordinate coord) {
         int selectedRoom = UnityEngine.Random.Range(1, GameplayConstants.Instance.totalNumberOfStandardRooms + 1);
         string sceneName = GameplayConstants.Instance.standardRoomNamePrefix + selectedRoom;
-        createRoom(new RoomCreationInfo(coord, sceneName, HiddenRoomParticlesPrefab));
+        createRoom(new RoomCreationInfo(coord, sceneName, HiddenRoomParticlesPrefab, HallwayParticlesPrefab));
     }
 
     /// <summary>
@@ -132,27 +136,31 @@ public class GridMaster : MonoBehaviour {
 
     /// <summary>
     /// Returns a list of rooms in a specefic order. If the room cannot be entered, then that spot in the list will be null.
-    /// Order: 0 = left (-X), 1 = top (Z), 2 = right (X), 3 (-Z)
+    /// Order: See Edge enum
     /// </summary>
     public RoomController[] GetEnterableRooms(RoomController room) {
         RoomController[] sortedRooms = GetSortedAdjacentRooms(room);
         
         // Determine if the player can enter the room.
-        if (room.NegXConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[0] == null || sortedRooms[0].PosXConnection == RoomConnection.RoomConnectionType.Wall)
-            sortedRooms[0] = null;
-        if (room.PosZConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[1] == null || sortedRooms[1].NegZConnection == RoomConnection.RoomConnectionType.Wall)
-            sortedRooms[1] = null;
-        if (room.PosXConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[2] == null || sortedRooms[2].NegXConnection == RoomConnection.RoomConnectionType.Wall)
-            sortedRooms[2] = null;
-        if (room.NegZConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[3] == null || sortedRooms[3].PosZConnection == RoomConnection.RoomConnectionType.Wall)
-            sortedRooms[3] = null;
+        if (room.NegXConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[(int)Edge.Left] == null
+            || (sortedRooms[(int)Edge.Left].Revealed && sortedRooms[(int)Edge.Left].PosXConnection == RoomConnection.RoomConnectionType.Wall))
+            sortedRooms[(int)Edge.Left] = null;
+        if (room.PosZConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[(int)Edge.Top] == null
+            || (sortedRooms[(int)Edge.Top].Revealed && sortedRooms[(int)Edge.Top].NegZConnection == RoomConnection.RoomConnectionType.Wall))
+            sortedRooms[(int)Edge.Top] = null;
+        if (room.PosXConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[(int)Edge.Right] == null
+            || (sortedRooms[(int)Edge.Right].Revealed && sortedRooms[(int)Edge.Right].NegXConnection == RoomConnection.RoomConnectionType.Wall))
+            sortedRooms[(int)Edge.Right] = null;
+        if (room.NegZConnection == RoomConnection.RoomConnectionType.Wall || sortedRooms[(int)Edge.Bottom] == null
+            || (sortedRooms[(int)Edge.Bottom].Revealed && sortedRooms[(int)Edge.Bottom].PosZConnection == RoomConnection.RoomConnectionType.Wall))
+            sortedRooms[(int)Edge.Bottom] = null;
 
         return sortedRooms;
     }
 
     /// <summary>
     /// Given a room, returns the list in the order given below. If there was no room, then that spot in the list will be null.
-    /// Order: 0 = left (-X), 1 = top (Z), 2 = right (X), 3 (-Z)
+    /// Order: See Edge enum
     /// </summary>
     /// <returns></returns>
     public RoomController[] GetSortedAdjacentRooms(RoomController room) {
@@ -163,13 +171,13 @@ public class GridMaster : MonoBehaviour {
         foreach(RoomController adjacentRoom in adjacentRooms) {
             Coordinate delta = room.GridPosition.Delta(adjacentRoom.GridPosition);
             if (delta.X == -1)
-                sortedRooms[0] = adjacentRoom;
+                sortedRooms[(int)Edge.Left] = adjacentRoom;
             else if (delta.Z == 1)
-                sortedRooms[1] = adjacentRoom;
+                sortedRooms[(int)Edge.Top] = adjacentRoom;
             else if (delta.X == 1)
-                sortedRooms[2] = adjacentRoom;
+                sortedRooms[(int)Edge.Right] = adjacentRoom;
             else if (delta.Z == -1)
-                sortedRooms[3] = adjacentRoom;
+                sortedRooms[(int)Edge.Bottom] = adjacentRoom;
         }
 
         return sortedRooms;

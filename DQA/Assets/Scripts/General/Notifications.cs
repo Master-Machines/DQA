@@ -15,6 +15,10 @@ public class Notifications {
     public const string KEY_ROOM = "keyRoom";
     public const string KEY_PLAYER = "keyPlayer";
 
+    public const string NOTIFICATION_CRYPT_MODE_ENABLED = "cryptModeEnabled";
+
+    public const string NOTIFICATION_CRYPT_MODE_DISABLED = "cryptModeDisabled";
+
     public const string INPUT_A_PRESSED = "aPressed";
     public const string INPUT_B_PRESSED = "bPressed";
     public const string INPUT_X_PRESSED = "xPressed";

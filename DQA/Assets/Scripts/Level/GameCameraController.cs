@@ -1,19 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityStandardAssets;
 
 public class GameCameraController : MonoBehaviour {
 
     public static GameCameraController Instance;
+    
+
     // Straight top down
-    private const float MaxXAngle = 90f;
-    private const float MinXAngle = 45f;
+    private const float MaxXAngle = 65f;
+    private const float MinXAngle = 55f;
     private const float RoomHighlightXAngle = 60f;
-    private Vector3 PlayerHighlightOffset = new Vector3(0, 25f, -15f);
+    private Vector3 PlayerHighlightOffset = new Vector3(0, 15f, -7f);
     private Vector3 RoomHighlightOffset = new Vector3(0, 35f, -15f);
+    private Vector3 GridCenterOffset = new Vector3(0f, -10f, -40f);
 
     private const float RealtimeMovementSpeed = 25f;
-    private const float RealtimeRotationSpeed = 50f;
+    private const float RealtimeRotationSpeed = 6f;
 
     private float posMovementTime = 0f;
     private float posMovementMax = 0f;
@@ -25,18 +29,21 @@ public class GameCameraController : MonoBehaviour {
     private float rotXStart;
     private float rotXEnd;
 
+    
+
     private bool updatingForActionPhase;
 
     void Awake() {
         Instance = this;
         NotificationManager.Observe(this, "PhaseChanged", Notifications.NOTIFICATION_PHASE_INCREMENTED);
+        
     }
 
     void PhaseChanged(Dictionary<string, object> paramaters) {
         Phase p = PhaseTracker.GetPhaseFromNotificationParams(paramaters);
         updatingForActionPhase = false;
         if(p == Phase.Intermediate) {
-            MoveToTargetPositionOverTime(GridMaster.Instance.CurrentMap.GridCenter, PhaseTracker.PhaseTransitionTime);
+            MoveToTargetPositionOverTime(GridMaster.Instance.CurrentMap.GridCenter + GridCenterOffset, PhaseTracker.PhaseTransitionTime);
             MoveToTargetRotationOverTime(MaxXAngle, PhaseTracker.PhaseTransitionTime);
         } else if(p == Phase.Status) {
             MoveToTargetPositionOverTime(GetPlayerCameraPosition(), PhaseTracker.PhaseTransitionTime);
@@ -171,4 +178,5 @@ public class GameCameraController : MonoBehaviour {
         playerPosition += PlayerHighlightOffset;
         return playerPosition;
     }
+
 }

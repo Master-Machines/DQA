@@ -25,6 +25,9 @@ public class StatusPhaseController : MonoBehaviour {
 
     void EnablePhase() {
         phaseEnabled = true;
+        if(Game.CurrentGame.CurrentPlayer.InCrypt) {
+            NotificationManager.PostNotification(Notifications.NOTIFICATION_CRYPT_MODE_ENABLED, null);
+        }
         if(UIParent != null)
             UIParent.SetActive(true);
         Continue();

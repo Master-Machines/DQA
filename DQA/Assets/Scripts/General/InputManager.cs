@@ -59,16 +59,16 @@ public class InputManager : MonoBehaviour {
                 timeMovement = 0;
         }
         if(timeMovement == 0) {
-            if(state.ThumbSticks.Left.X < -analogSensitivty) {
+            if(state.ThumbSticks.Left.X < -analogSensitivty || state.DPad.Left == ButtonState.Pressed) {
                 NotificationManager.PostNotification(Notifications.INPUT_LEFT, null);
                 timeMovement = MinTimeBetweenMovement;
-            } else if(state.ThumbSticks.Left.X > analogSensitivty) {
+            } else if(state.ThumbSticks.Left.X > analogSensitivty || state.DPad.Right == ButtonState.Pressed) {
                 NotificationManager.PostNotification(Notifications.INPUT_RIGHT, null);
                 timeMovement = MinTimeBetweenMovement;
-            } else if(state.ThumbSticks.Left.Y < -analogSensitivty) {
+            } else if(state.ThumbSticks.Left.Y < -analogSensitivty || state.DPad.Down == ButtonState.Pressed) {
                 NotificationManager.PostNotification(Notifications.INPUT_DOWN, null);
                 timeMovement = MinTimeBetweenMovement;
-            } else if(state.ThumbSticks.Left.Y > analogSensitivty) {
+            } else if(state.ThumbSticks.Left.Y > analogSensitivty || state.DPad.Up == ButtonState.Pressed) {
                 NotificationManager.PostNotification(Notifications.INPUT_UP, null);
                 timeMovement = MinTimeBetweenMovement;
             }

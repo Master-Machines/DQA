@@ -51,13 +51,20 @@ public class ActionPhaseController : MonoBehaviour {
                 CurrentSubPhase = ActionSubPhase.Move;
            } else if(CurrentSubPhase == ActionSubPhase.Move) {
                 Game.CurrentGame.CurrentPlayer.PlayerController.MoveToRoom(MovementRooms[CurrentlyHighlightedRoom]);
-                MovementRooms[CurrentlyHighlightedRoom].Reveal();
                 RoomSelectionParticles.SetActive(false);
                 MovementUI.SetActive(false);
                 phaseEnabled = false;
+           } else if(CurrentSubPhase == ActionSubPhase.Catacombs) {
+                phaseEnabled = false;
+                Game.CurrentGame.CurrentPlayer.PlayerController.SwitchCryptMode(true);
+                StartCoroutine(Continue(2f));
+                CatacombsUI.SetActive(false);
+                NotificationManager.PostNotification(Notifications.NOTIFICATION_CRYPT_MODE_ENABLED, null);
            }
        }
     }
+
+    
 
     void PressedB() {
         if(phaseEnabled) {
@@ -146,15 +153,22 @@ public class ActionPhaseController : MonoBehaviour {
         CatacombsUI.SetActive(CurrentSubPhase == ActionSubPhase.Catacombs);
         RoomSelectionParticles.SetActive(CurrentSubPhase == ActionSubPhase.Move);
         if(CurrentSubPhase == ActionSubPhase.Move) {
-            MovementRooms = GridMaster.Instance.GetEnterableRooms(Game.CurrentGame.CurrentPlayer.CurrentRoom);
-            if (MovementRooms[0] != null)
-                CurrentlyHighlightedRoom = 0;
-            else if (MovementRooms[1] != null)
-                CurrentlyHighlightedRoom = 1;
-            else if (MovementRooms[2] != null)
-                CurrentlyHighlightedRoom = 2;
-            else if (MovementRooms[3] != null)
-                CurrentlyHighlightedRoom = 3;
+            if(Game.CurrentGame.CurrentPlayer.InCrypt) {
+                MovementRooms = GridMaster.Instance.GetSortedAdjacentRooms(Game.CurrentGame.CurrentPlayer.CurrentRoom);
+            } else {
+                MovementRooms = GridMaster.Instance.GetEnterableRooms(Game.CurrentGame.CurrentPlayer.CurrentRoom);
+            }
+            
+            if (MovementRooms[(int)Edge.Left] != null)
+                CurrentlyHighlightedRoom = (int)Edge.Left;
+            else if (MovementRooms[(int)Edge.Top] != null)
+                CurrentlyHighlightedRoom = (int)Edge.Top;
+            else if (MovementRooms[(int)Edge.Right] != null)
+                CurrentlyHighlightedRoom = (int)Edge.Right;
+            else if (MovementRooms[(int)Edge.Bottom] != null)
+                CurrentlyHighlightedRoom = (int)Edge.Bottom;
+            else
+                Debug.LogError("No room to move to. This shouldn't happen.");
         }
     }
     
@@ -166,11 +180,18 @@ public class ActionPhaseController : MonoBehaviour {
             RoomSelectionParticles.transform.position = highlightedPosition;
         }
     }
+
+    IEnumerator Continue(float afterSeconds) {
+        yield return new WaitForSeconds(afterSeconds);
+        Continue();
+    }
 	
 	void Continue() {
         phaseEnabled = false;
         if(UIParent != null)
             UIParent.SetActive(false);
+        if (Game.CurrentGame.CurrentPlayer.InCrypt)
+            NotificationManager.PostNotification(Notifications.NOTIFICATION_CRYPT_MODE_DISABLED, null);
         PhaseTracker.Instance.ProceedToNextPhase();
     }
 
